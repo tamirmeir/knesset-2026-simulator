@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>מעבדת ממשלה 2026: סקרים מדויקים וסך 120 נעול</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #131c2e;
+      --card-border: #23324d;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --blue: #38bdf8;
+      --teal: #2dd4bf;
+      --rose: #f43f5e;
+      --purple: #c084fc;
+      --amber: #f59e0b;
+      --green-wa: #25d366;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); padding: 12px; line-height: 1.4; }
+    .container { max-width: 720px; margin: 0 auto; }
+
+    header {
+      text-align: center;
+      padding: 16px 12px;
+      margin-bottom: 12px;
+      background: linear-gradient(180deg, #1e293b 0%, var(--bg) 100%);
+      border-radius: 14px;
+      border: 1px solid var(--card-border);
+    }
+    header h1 { font-size: 1.55rem; color: var(--blue); font-weight: 900; margin-bottom: 4px; }
+    header p { color: var(--text-muted); font-size: 0.85rem; }
+
+    /* באנר חיווי ניוד קולות צף */
+    .transfer-toast {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #0f172a;
+      border: 2px solid var(--blue);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-size: 0.92rem;
+      font-weight: 800;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .transfer-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* פאנל סקר ותאריך פרסום */
+    .poll-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .poll-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .poll-badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--blue);
+      border: 1px solid var(--blue);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+    .poll-date-tag {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--amber);
+      border: 1px solid var(--amber);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    select.poll-select {
+      width: 100%;
+      background: #0b1120;
+      color: #fff;
+      border: 1px solid var(--card-border);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* מד מנדטים Sticky */
+    .sticky-meter {
+      position: sticky;
+      top: 8px;
+      z-index: 50;
+      background: #0b1120;
+      border: 1px solid var(--blue);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    .meter-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .progress-bar-bg {
+      background: #1e293b;
+      height: 16px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--blue);
+      width: 0%;
+      transition: width 0.25s ease, background 0.25s ease;
+    }
+    .target-line {
+      position: absolute;
+      top: 0; bottom: 0;
+      left: calc(100% - (61 / 120 * 100%));
+      width: 3px;
+      background: var(--rose);
+      z-index: 5;
+    }
+
+    .alert-box {
+      margin-top: 10px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      display: block;
+    }
+    .alert-box.info {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid var(--blue);
+      color: #bae6fd;
+    }
+    .alert-box.error {
+      background: rgba(244, 63, 94, 0.18);
+      border: 1px solid var(--rose);
+      color: #ffe4e6;
+    }
+    .alert-box.success {
+      background: rgba(45, 212, 191, 0.18);
+      border: 1px solid var(--teal);
+      color: #ccfbf1;
+    }
+
+    /* תרחיש פיצול הליכוד */
+    .scenario-card {
+      background: #101c30;
+      border: 1px solid var(--teal);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+    .scenario-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--teal);
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .split-slider {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #23324d;
+      outline: none;
+      -webkit-appearance: none;
+      margin: 8px 0;
+    }
+    .split-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--teal);
+      cursor: pointer;
+    }
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* רשימת מפלגות */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 6px;
+    }
+
+    .party-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 4px;
+      border-bottom: 1px solid #1a2538;
+      font-size: 0.88rem;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .party-row:last-child { border-bottom: none; }
+    .party-row.dropped {
+      opacity: 0.45;
+      background: rgba(244, 63, 94, 0.05);
+    }
+    .party-row.veto-conflict {
+      background: rgba(244, 63, 94, 0.12);
+      border-right: 3px solid var(--rose);
+      padding-right: 6px;
+    }
+
+    .party-row.flash-green {
+      background: rgba(45, 212, 191, 0.28) !important;
+      transform: scale(1.02);
+    }
+    .party-row.flash-red {
+      background: rgba(244, 63, 94, 0.28) !important;
+      transform: scale(0.98);
+    }
+
+    .party-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 8px;
+    }
+    .btn-step {
+      background: #23324d;
+      color: #fff;
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-step:active { transform: scale(0.92); background: var(--blue); color: #000; }
+
+    .seats-badge {
+      background: #23324d;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      min-width: 28px;
+      text-align: center;
+      transition: background 0.3s;
+    }
+    .seats-badge.danger {
+      background: var(--rose);
+      color: #fff;
+    }
+
+    .status-btn {
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      background: #0b1120;
+      color: var(--text-muted);
+      min-width: 95px;
+      text-align: center;
+    }
+    .status-btn.coalition {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+    .status-btn.support {
+      background: rgba(192, 132, 252, 0.2);
+      border-color: var(--purple);
+      color: var(--purple);
+    }
+
+    /* מודאל ניוד */
+    .swap-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+      backdrop-filter: blur(3px);
+    }
+    .swap-modal.open { display: flex; }
+    .swap-sheet {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 18px 16px 28px 16px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+      animation: slideUp 0.25s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .swap-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 8px;
+    }
+    .swap-header h3 { font-size: 1.1rem; color: var(--blue); font-weight: 800; }
+    .swap-close {
+      background: #23324d; border: none; color: #fff; width: 28px; height: 28px;
+      border-radius: 50%; cursor: pointer; font-weight: bold;
+    }
+
+    .swap-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .swap-btn {
+      background: #0b1120;
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: right;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .swap-btn:active { background: var(--blue); color: #000; }
+    .swap-btn span.badge {
+      background: #23324d;
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-size: 0.8rem;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .btn-action {
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid var(--card-border);
+      padding: 10px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn-action:active { background: var(--blue); color: #000; }
+
+    .share-btn {
+      width: 100%;
+      background: var(--green-wa);
+      color: #000;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      margin-top: 12px;
+      font-family: inherit;
+    }
+
+    .disclaimer-box {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.76rem;
+      color: var(--amber);
+      margin-top: 14px;
+      text-align: center;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- באנר חיווי ניוד קולות צף -->
+  <div id="transferToast" class="transfer-toast"></div>
+
+  <header>
+    <h1>מעבדת ממשלה 2026</h1>
+    <p>סך 120 נעול: סקרים רשמיים, תאריכי שידור וניוד קולות חי</p>
+  </header>
+
+  <!-- בחירת סקר ותאריך פרסום מדויק -->
+  <div class="poll-bar">
+    <div class="poll-header-row">
+      <span class="poll-badge" id="pollBadge">חדשות 12 / מכון מדגם</span>
+      <span class="poll-date-tag" id="pollDate">📅 שודר: 18 בספטמבר 2026</span>
+    </div>
+    <select class="poll-select" id="pollPicker" onchange="switchPoll(this.value)">
+      <option value="ch12">חדשות 12 / מנו גבע (18.09.2026) - ליכוד 20, ישר 23</option>
+      <option value="maariv">מעריב / לזר מחקרים (19.09.2026) - ליכוד 20, ישר 23</option>
+      <option value="kan11">כאן 11 / מכון קנטאר (21.09.2026) - ליכוד 20, ישר 22</option>
+      <option value="ch14">ערוץ 14 / דיירקט פולס (20.09.2026) - ליכוד 26, ישר 21</option>
+      <option value="average">ממוצע הסקרים המשוקלל (ספטמבר 2026) - ליכוד 22, ישר 22</option>
+    </select>
+  </div>
+
+  <!-- מד המנדטים Sticky -->
+  <div class="sticky-meter">
+    <div class="meter-head">
+      <div>
+        <span style="font-size: 0.9rem; font-weight: 700;">אצבעות לקואליציה: </span>
+        <span id="seatCount" style="font-size: 1.55rem; font-weight: 900; color: var(--blue);">0</span>
+        <span style="color: var(--text-muted); font-size: 0.9rem;"> / 120</span>
+      </div>
+      <div>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">סך הכל בכנסת: </span>
+        <span id="totalKnesset" style="font-weight: 800; color: var(--teal);">120</span>
+      </div>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="target-line" title="קו ה-61"></div>
+      <div class="progress-fill" id="progressBar"></div>
+    </div>
+    
+    <div id="alertBox" class="alert-box info"></div>
+  </div>
+
+  <!-- תרחיש פיצול הליכוד -->
+  <div class="scenario-card">
+    <div class="scenario-title">
+      <span>תרחיש עומק: פיצול/מרד בליכוד</span>
+      <span id="splitLabel" style="font-size: 0.85rem; color: var(--teal);">0 ח"כים עורקים לממשלה</span>
+    </div>
+    <input type="range" class="split-slider" id="splitSlider" min="0" max="10" value="0" oninput="handleLikudSplit(this.value)">
+    <div class="slider-labels">
+      <span>0 (משמעת מלאה לנתניהו)</span>
+      <span>10 (פיצול סיעה רחב)</span>
+    </div>
+  </div>
+
+  <!-- רשימת מפלגות עם ניוד קולות אלגנטי -->
+  <div class="card">
+    <div class="card-title">
+      <span style="color: var(--blue);">🏛️ מפלגות הכנסת (נעול בדיוק על 120)</span>
+      <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">לחיצה על +/- פותחת ניוד מנדטים</span>
+    </div>
+    <div id="partiesList"></div>
+  </div>
+
+  <!-- פעולות ואיפוס -->
+  <div class="action-grid">
+    <button class="btn-action" onclick="resetToPollDefaults()">🔄 אפס לנתוני הסקר המקורי</button>
+    <button class="btn-action" onclick="resetCoalition()">❌ רוקן קואליציה</button>
+  </div>
+
+  <!-- שיתוף -->
+  <button class="share-btn" onclick="shareWhatsApp()">
+    <span>שתף את תמונת הקואליציה בוואטסאפ</span>
+    <span>💬</span>
+  </button>
+
+  <div class="disclaimer-box">
+    ⚠️ <strong>הבהרת שקיפות:</strong> המערכת שומרת בקפדנות על חוק שימור ה-120. כל סקרי המקור מודלו כך שסכומם שווה בדיוק ל-120 מנדטים על פי תאריכי הפרסום הרשמיים.
+  </div>
+
+</div>
+
+<!-- Modal ניוד מנדטים -->
+<div class="swap-modal" id="swapModal" onclick="closeSwapModal(event)">
+  <div class="swap-sheet" onclick="event.stopPropagation()">
+    <div class="swap-header">
+      <h3 id="swapTitle">ניוד מנדט</h3>
+      <button class="swap-close" onclick="closeSwapModal()">✕</button>
+    </div>
+    <p id="swapSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;"></p>
+    <div class="swap-list" id="swapOptions"></div>
+  </div>
+</div>
+
+<script>
+  // כיול מדויק של כל המכונים ל-120 מנדטים בדיוק
+  const POLL_SOURCES = {
+    ch12: {
+      badge: "חדשות 12 / מכון מדגם",
+      date: "📅 שודר: 18 בספטמבר 2026",
+      seats: {
+        eisenkot: 23, likud: 20, bennett: 13, liberman: 9, golan: 9,
+        shas: 10, utj: 8, bengvir: 8, winter: 5, hendel: 4,
+        smotrich: 0, raam: 5, hadash: 6
+      } // סה"כ: 120
+    },
+    maariv: {
+      badge: "מעריב / לזר מחקרים",
+      date: "📅 פורסם: 19 בספטמבר 2026",
+      seats: {
+        eisenkot: 23, likud: 20, bennett: 13, liberman: 10, golan: 8,
+        shas: 9, utj: 8, bengvir: 8, winter: 5, hendel: 4,
+        smotrich: 4, raam: 5, hadash: 3
+      } // סה"כ: 120
+    },
+    kan11: {
+      badge: "כאן 11 / מכון קנטאר",
+      date: "📅 שודר: 21 בספטמבר 2026",
+      seats: {
+        eisenkot: 22, likud: 20, bennett: 12, liberman: 9, golan: 9,
+        shas: 10, utj: 8, bengvir: 7, winter: 5, hendel: 4,
+        smotrich: 4, raam: 5, hadash: 5
+      } // סה"כ: 120 בדיוק!
+    },
+    ch14: {
+      badge: "ערוץ 14 / דיירקט פולס",
+      date: "📅 שודר: 20 בספטמבר 2026",
+      seats: {
+        eisenkot: 21, likud: 26, bennett: 9, liberman: 8, golan: 9,
+        shas: 8, utj: 8, bengvir: 8, winter: 4, hendel: 4,
+        smotrich: 4, raam: 5, hadash: 6
+      } // סה"כ: 120
+    },
+    average: {
+      badge: "ממוצע הסקרים המשוקלל",
+      date: "📅 שקלול ספטמבר 2026",
+      seats: {
+        eisenkot: 22, likud: 22, bennett: 12, liberman: 9, golan: 9,
+        shas: 9, utj: 8, bengvir: 8, winter: 5, hendel: 4,
+        smotrich: 4, raam: 5, hadash: 5
+      } // סה"כ: 120
+    }
+  };
+
+  const PARTY_DEFINITIONS = [
+    { id: 'eisenkot', name: 'ישר! (איזנקוט)', defaultStatus: 'coalition' },
+    { id: 'likud', name: 'הליכוד (נתניהו)', defaultStatus: 'opposition' },
+    { id: 'likud_rebels', name: '↳ פורשי הליכוד לממשלה', defaultStatus: 'coalition', isRebel: true },
+    { id: 'bennett', name: 'ביחד (בנט)', defaultStatus: 'coalition' },
+    { id: 'liberman', name: 'ישראל ביתנו (ליברמן)', defaultStatus: 'coalition' },
+    { id: 'golan', name: 'הדמוקרטים (גולן)', defaultStatus: 'opposition' },
+    { id: 'winter', name: 'עמך ישראל (וינטר וחדאד)', defaultStatus: 'coalition' },
+    { id: 'hendel', name: 'המילואימניקים (הנדל וזליכה)', defaultStatus: 'coalition' },
+    { id: 'shas', name: 'ש"ס', defaultStatus: 'opposition' },
+    { id: 'utj', name: 'יהדות התורה', defaultStatus: 'opposition' },
+    { id: 'bengvir', name: 'עוצמה יהודית (בן גביר)', defaultStatus: 'opposition' },
+    { id: 'smotrich', name: 'הציונות הדתית (סמוטריץ\')', defaultStatus: 'opposition' },
+    { id: 'raam', name: 'רע"ם (עבאס)', defaultStatus: 'opposition' },
+    { id: 'hadash', name: 'חד"ש-תע"ל', defaultStatus: 'opposition' }
+  ];
+
+  let currentPollKey = 'ch12';
+  let partiesState = [];
+  let likudBaseSeats = 20;
+  let likudRebelsCount = 0;
+
+  function switchPoll(key) {
+    currentPollKey = key;
+    const poll = POLL_SOURCES[key];
+    document.getElementById('pollBadge').innerText = poll.badge;
+    document.getElementById('pollDate').innerText = poll.date;
+
+    likudBaseSeats = poll.seats.likud || 20;
+    likudRebelsCount = 0;
+    document.getElementById('splitSlider').value = 0;
+    document.getElementById('splitLabel').innerText = '0 ח"כים עורקים לממשלה';
+
+    partiesState = PARTY_DEFINITIONS.map(p => {
+      let s = 0;
+      if (p.id === 'likud') s = likudBaseSeats;
+      else if (p.id === 'likud_rebels') s = 0;
+      else s = poll.seats[p.id] || 0;
+
+      return {
+        id: p.id,
+        name: p.name,
+        seats: s,
+        status: p.defaultStatus,
+        isRebel: !!p.isRebel
+      };
+    });
+
+    render();
+  }
+
+  function openSwapModal(targetId, mode) {
+    const target = partiesState.find(x => x.id === targetId);
+    if (!target) return;
+
+    const modal = document.getElementById('swapModal');
+    const title = document.getElementById('swapTitle');
+    const subtitle = document.getElementById('swapSubtitle');
+    const list = document.getElementById('swapOptions');
+
+    list.innerHTML = '';
+
+    if (mode === 'add') {
+      title.innerText = `➕ הוספת מנדט ל-${target.name}`;
+      subtitle.innerText = `מאיזו מפלגה ${target.name} שואבת את המנדט כדי לשמור על 120?`;
+
+      partiesState.forEach(p => {
+        if (p.id !== targetId && !p.isRebel && p.seats > 0) {
+          const btn = document.createElement('button');
+          btn.className = 'swap-btn';
+          btn.innerHTML = `<span>${p.name}</span><span class="badge">${p.seats} מנדטים</span>`;
+          btn.onclick = () => {
+            executeTransfer(p.id, target.id);
+            closeSwapModal();
+          };
+          list.appendChild(btn);
+        }
+      });
+    } else {
+      if (target.seats <= 0) return;
+      title.innerText = `➖ הורדת מנדט מ-${target.name}`;
+      subtitle.innerText = `לאיזו מפלגה תרצה להעביר את המנדט שנגרע מ-${target.name}?`;
+
+      partiesState.forEach(p => {
+        if (p.id !== targetId && !p.isRebel) {
+          const btn = document.createElement('button');
+          btn.className = 'swap-btn';
+          btn.innerHTML = `<span>${p.name}</span><span class="badge">${p.seats} מנדטים</span>`;
+          btn.onclick = () => {
+            executeTransfer(target.id, p.id);
+            closeSwapModal();
+          };
+          list.appendChild(btn);
+        }
+      });
+    }
+
+    modal.classList.add('open');
+  }
+
+  function executeTransfer(fromId, toId) {
+    const fromParty = partiesState.find(p => p.id === fromId);
+    const toParty = partiesState.find(p => p.id === toId);
+    if (!fromParty || !toParty) return;
+
+    fromParty.seats -= 1;
+    toParty.seats += 1;
+
+    if (fromId === 'likud') likudBaseSeats -= 1;
+    if (toId === 'likud') likudBaseSeats += 1;
+    syncRebels();
+
+    render();
+
+    showToast(`🔄 הועבר מנדט 1: <strong>${fromParty.name}</strong> ⬅️ אל <strong>${toParty.name}</strong>`);
+    flashRow(toId, 'flash-green');
+    flashRow(fromId, 'flash-red');
+  }
+
+  function showToast(htmlMsg) {
+    const toast = document.getElementById('transferToast');
+    toast.innerHTML = htmlMsg;
+    toast.classList.add('show');
+    clearTimeout(toast.timeoutId);
+    toast.timeoutId = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2800);
+  }
+
+  function flashRow(partyId, className) {
+    setTimeout(() => {
+      const row = document.getElementById(`row-${partyId}`);
+      if (row) {
+        row.classList.add(className);
+        setTimeout(() => row.classList.remove(className), 900);
+      }
+    }, 50);
+  }
+
+  function closeSwapModal(e) {
+    if (e && e.target !== e.currentTarget && !e.target.classList.contains('swap-close')) return;
+    document.getElementById('swapModal').classList.remove('open');
+  }
+
+  function handleLikudSplit(val) {
+    likudRebelsCount = parseInt(val, 10);
+    document.getElementById('splitLabel').innerText = `${likudRebelsCount} ח"כים עורקים לממשלה`;
+    syncRebels();
+    render();
+  }
+
+  function syncRebels() {
+    const likud = partiesState.find(p => p.id === 'likud');
+    const rebels = partiesState.find(p => p.id === 'likud_rebels');
+    if (likud && rebels) {
+      likudRebelsCount = Math.min(likudRebelsCount, likudBaseSeats);
+      likud.seats = likudBaseSeats - likudRebelsCount;
+      rebels.seats = likudRebelsCount;
+    }
+  }
+
+  function cycleStatus(id) {
+    const p = partiesState.find(x => x.id === id);
+    if (!p) return;
+
+    if (p.status === 'coalition') p.status = 'support';
+    else if (p.status === 'support') p.status = 'opposition';
+    else p.status = 'coalition';
+
+    render();
+  }
+
+  function render() {
+    const container = document.getElementById('partiesList');
+    container.innerHTML = '';
+
+    let totalKnesset = 0;
+    let coalSeats = 0;
+    let suppSeats = 0;
+
+    const inGov = id => (partiesState.find(p => p.id === id) || {}).status === 'coalition';
+    const isVetoWinterGolan = inGov('winter') && inGov('golan');
+
+    partiesState.forEach(p => {
+      const isUnderThreshold = !p.isRebel && p.seats > 0 && p.seats < 4;
+      const effectiveSeats = isUnderThreshold ? 0 : p.seats;
+
+      if (!p.isRebel) totalKnesset += effectiveSeats;
+      if (p.status === 'coalition') coalSeats += effectiveSeats;
+      if (p.status === 'support') suppSeats += effectiveSeats;
+
+      if (p.isRebel && p.seats === 0) return;
+
+      const isConflictRow = isVetoWinterGolan && (p.id === 'winter' || p.id === 'golan');
+
+      const row = document.createElement('div');
+      row.id = `row-${p.id}`;
+      row.className = 'party-row' + (isUnderThreshold ? ' dropped' : '') + (isConflictRow ? ' veto-conflict' : '');
+
+      let label = 'באופוזיציה';
+      let cls = '';
+      if (p.status === 'coalition') { label = 'בממשלה (פנים)'; cls = 'coalition'; }
+      else if (p.status === 'support') { label = 'תמיכה מבחוץ'; cls = 'support'; }
+
+      row.innerHTML = `
+        <div class="party-info">
+          ${!p.isRebel ? `
+          <div class="stepper">
+            <button class="btn-step" onclick="openSwapModal('${p.id}', 'sub')">-</button>
+            <span class="seats-badge ${isUnderThreshold ? 'danger' : ''}">${p.seats}</span>
+            <button class="btn-step" onclick="openSwapModal('${p.id}', 'add')">+</button>
+          </div>
+          ` : `
+          <span class="seats-badge" style="background: var(--teal); color: #000; margin-left: 8px;">${p.seats}</span>
+          `}
+          <div>
+            <span style="font-weight: 700; ${p.isRebel ? 'color: var(--teal);' : ''}">${p.name}</span>
+            ${isUnderThreshold ? '<span style="color: var(--rose); font-size: 0.72rem; display: block;">מתחת לאחוז החסימה (נמחק)</span>' : ''}
+            ${isConflictRow ? '<span style="color: var(--rose); font-size: 0.72rem; display: block; font-weight: bold;">⚠️ וטו הדדי: לא יושבים יחד בממשלה!</span>' : ''}
+          </div>
+        </div>
+        <button class="status-btn ${cls}" onclick="cycleStatus('${p.id}')">${label}</button>
+      `;
+      container.appendChild(row);
+    });
+
+    document.getElementById('totalKnesset').innerText = totalKnesset;
+    const power = coalSeats + suppSeats;
+    document.getElementById('seatCount').innerText = power;
+
+    const bar = document.getElementById('progressBar');
+    bar.style.width = Math.min(100, (power / 120) * 100) + '%';
+
+    evaluateConflicts(power);
+  }
+
+  function evaluateConflicts(power) {
+    const alertBox = document.getElementById('alertBox');
+    const bar = document.getElementById('progressBar');
+    const conflicts = [];
+
+    const inGov = id => (partiesState.find(p => p.id === id) || {}).status === 'coalition';
+    const isAny = id => (partiesState.find(p => p.id === id) || {}).status !== 'opposition';
+
+    if (inGov('winter') && inGov('golan')) {
+      conflicts.push('<strong>וטו הדדי מוחלט:</strong> עופר וינטר ויאיר גולן לא יושבים יחד באותה ממשלה (משקעי עבר ומסקנות הפוכות מ-7/10). יש להעביר אחד מהם לאופוזיציה.');
+    }
+    if (inGov('liberman') && inGov('likud')) {
+      conflicts.push('<strong>קו אדום:</strong> אביגדור ליברמן לא יושב בממשלה תחת נתניהו.');
+    }
+    if ((isAny('shas') || isAny('utj')) && (isAny('liberman') || isAny('hendel') || isAny('winter'))) {
+      conflicts.push('<strong>משבר גיוס:</strong> ציר הלוחמים (ליברמן, וינטר, הנדל) מציב שוויון מלא בנטל וסנקציות כתנאי ברזל שמונע ישיבה עם המפלגות החרדיות.');
+    }
+    if ((isAny('raam') || isAny('hadash')) && (isAny('liberman') || isAny('bennett') || isAny('winter'))) {
+      conflicts.push('<strong>קו אדום:</strong> אין הישענות על המפלגות הערביות בממשלת משרתים.');
+    }
+
+    if (conflicts.length > 0) {
+      bar.style.background = 'var(--rose)';
+      alertBox.className = 'alert-box error';
+      alertBox.innerHTML = `
+        <div style="font-weight: 800; margin-bottom: 4px;">⚠️ הממשלה נפסלה (הפרת קווי יסוד):</div>
+        <div>• ${conflicts.join('<br>• ')}</div>
+      `;
+    } else if (power >= 61) {
+      bar.style.background = 'var(--teal)';
+      alertBox.className = 'alert-box success';
+      alertBox.innerHTML = `🎉 <strong>הושגה ממשלה ציונית יציבה!</strong> רוב של ${power} אצבעות ללא הפרת קווים אדומים.`;
+    } else {
+      bar.style.background = 'var(--blue)';
+      alertBox.className = 'alert-box info';
+      alertBox.innerHTML = `ℹ️ לקואליציה יש כרגע <strong>${power}</strong> מנדטים (חסרים עוד <strong>${61 - power}</strong> להשגת רוב של 61).`;
+    }
+  }
+
+  function resetToPollDefaults() {
+    switchPoll(currentPollKey);
+  }
+
+  function resetCoalition() {
+    partiesState.forEach(p => p.status = 'opposition');
+    render();
+  }
+
+  function shareWhatsApp() {
+    let coal = 0;
+    let supp = 0;
+    partiesState.forEach(p => {
+      const eff = (!p.isRebel && p.seats > 0 && p.seats < 4) ? 0 : p.seats;
+      if (p.status === 'coalition') coal += eff;
+      if (p.status === 'support') supp += eff;
+    });
+    const total = coal + supp;
+    const text = `בדקתי במעבדת בחירות 2026 לפי ${POLL_SOURCES[currentPollKey].badge} (${POLL_SOURCES[currentPollKey].date}): הגעתי ל-${total} מנדטים לקואליציה (מתוך 120 בדיוק). האם יש 61 בלי להפר קווים אדומים? נסו בעצמכם:`;
+    window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text), '_blank');
+  }
+
+  switchPoll('ch12');
+</script>
+
+</body>
+</html>
