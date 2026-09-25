@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>מעבדת ממשלה 2026: סקרים מדויקים וסך 120 נעול</title>
+  <title>מעבדת ממשלה 2026: סקרים, חרם נתניהו ומלכוד ה-61</title>
+  
+  <!-- תגיות שיתוף מותאמות לוואטסאפ ולרשתות חברתיות -->
+  <meta property="og:title" content="מעבדת ממשלה 2026: האם יש 61 בלי להפר קווים אדומים?">
+  <meta property="og:description" content="סקרים רשמיים, אחוז חסימה, חרם ישיבה עם נתניהו וניוד קולות בזמן אמת. נסו להרכיב קואליציה.">
+  <meta property="og:type" content="website">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -65,7 +71,7 @@
       opacity: 1;
     }
 
-    /* פאנל סקר ותאריך פרסום */
+    /* פאנל סקר ותאריך */
     .poll-bar {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -180,7 +186,7 @@
       color: #ccfbf1;
     }
 
-    /* תרחיש פיצול הליכוד */
+    /* כרטיס תרחישים ומעמד נתניהו */
     .scenario-card {
       background: #101c30;
       border: 1px solid var(--teal);
@@ -218,6 +224,33 @@
       justify-content: space-between;
       font-size: 0.78rem;
       color: var(--text-muted);
+    }
+
+    .bibi-toggle-box {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #1a2538;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .btn-toggle {
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid var(--rose);
+      background: rgba(244, 63, 94, 0.15);
+      color: var(--rose);
+      transition: all 0.2s ease;
+    }
+    .btn-toggle.active {
+      border-color: var(--teal);
+      background: rgba(45, 212, 191, 0.2);
+      color: var(--teal);
     }
 
     /* רשימת מפלגות */
@@ -338,7 +371,7 @@
       color: var(--purple);
     }
 
-    /* מודאל ניוד */
+    /* Modal / Bottom Sheet */
     .swap-modal {
       display: none;
       position: fixed;
@@ -469,7 +502,7 @@
 
   <header>
     <h1>מעבדת ממשלה 2026</h1>
-    <p>סך 120 נעול: סקרים רשמיים, תאריכי שידור וניוד קולות חי</p>
+    <p>סך 120 נעול: סקרים רשמיים, אחוז חסימה ומלכוד ה-61</p>
   </header>
 
   <!-- בחירת סקר ותאריך פרסום מדויק -->
@@ -508,7 +541,7 @@
     <div id="alertBox" class="alert-box info"></div>
   </div>
 
-  <!-- תרחיש פיצול הליכוד -->
+  <!-- תרחיש פיצול הליכוד + מעמד נתניהו -->
   <div class="scenario-card">
     <div class="scenario-title">
       <span>תרחיש עומק: פיצול/מרד בליכוד</span>
@@ -518,6 +551,14 @@
     <div class="slider-labels">
       <span>0 (משמעת מלאה לנתניהו)</span>
       <span>10 (פיצול סיעה רחב)</span>
+    </div>
+
+    <!-- מתג מעמד נתניהו (קו אדום לגוש השינוי) -->
+    <div class="bibi-toggle-box">
+      <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">מעמד נתניהו בליכוד:</span>
+      <button id="bibiToggleBtn" class="btn-toggle" onclick="toggleBibiStatus()">
+        ❌ נתניהו בראש הליכוד (חרם גוש השינוי)
+      </button>
     </div>
   </div>
 
@@ -536,7 +577,7 @@
     <button class="btn-action" onclick="resetCoalition()">❌ רוקן קואליציה</button>
   </div>
 
-  <!-- שיתוף -->
+  <!-- שיתוף לוואטסאפ -->
   <button class="share-btn" onclick="shareWhatsApp()">
     <span>שתף את תמונת הקואליציה בוואטסאפ</span>
     <span>💬</span>
@@ -561,7 +602,6 @@
 </div>
 
 <script>
-  // כיול מדויק של כל המכונים ל-120 מנדטים בדיוק
   const POLL_SOURCES = {
     ch12: {
       badge: "חדשות 12 / מכון מדגם",
@@ -570,7 +610,7 @@
         eisenkot: 23, likud: 20, bennett: 13, liberman: 9, golan: 9,
         shas: 10, utj: 8, bengvir: 8, winter: 5, hendel: 4,
         smotrich: 0, raam: 5, hadash: 6
-      } // סה"כ: 120
+      }
     },
     maariv: {
       badge: "מעריב / לזר מחקרים",
@@ -579,7 +619,7 @@
         eisenkot: 23, likud: 20, bennett: 13, liberman: 10, golan: 8,
         shas: 9, utj: 8, bengvir: 8, winter: 5, hendel: 4,
         smotrich: 4, raam: 5, hadash: 3
-      } // סה"כ: 120
+      }
     },
     kan11: {
       badge: "כאן 11 / מכון קנטאר",
@@ -588,7 +628,7 @@
         eisenkot: 22, likud: 20, bennett: 12, liberman: 9, golan: 9,
         shas: 10, utj: 8, bengvir: 7, winter: 5, hendel: 4,
         smotrich: 4, raam: 5, hadash: 5
-      } // סה"כ: 120 בדיוק!
+      }
     },
     ch14: {
       badge: "ערוץ 14 / דיירקט פולס",
@@ -597,7 +637,7 @@
         eisenkot: 21, likud: 26, bennett: 9, liberman: 8, golan: 9,
         shas: 8, utj: 8, bengvir: 8, winter: 4, hendel: 4,
         smotrich: 4, raam: 5, hadash: 6
-      } // סה"כ: 120
+      }
     },
     average: {
       badge: "ממוצע הסקרים המשוקלל",
@@ -606,19 +646,19 @@
         eisenkot: 22, likud: 22, bennett: 12, liberman: 9, golan: 9,
         shas: 9, utj: 8, bengvir: 8, winter: 5, hendel: 4,
         smotrich: 4, raam: 5, hadash: 5
-      } // סה"כ: 120
+      }
     }
   };
 
   const PARTY_DEFINITIONS = [
-    { id: 'eisenkot', name: 'ישר! (איזנקוט)', defaultStatus: 'coalition' },
+    { id: 'eisenkot', name: 'ישר! (איזנקוט)', defaultStatus: 'coalition', isChangeBloc: true },
     { id: 'likud', name: 'הליכוד (נתניהו)', defaultStatus: 'opposition' },
     { id: 'likud_rebels', name: '↳ פורשי הליכוד לממשלה', defaultStatus: 'coalition', isRebel: true },
-    { id: 'bennett', name: 'ביחד (בנט)', defaultStatus: 'coalition' },
-    { id: 'liberman', name: 'ישראל ביתנו (ליברמן)', defaultStatus: 'coalition' },
-    { id: 'golan', name: 'הדמוקרטים (גולן)', defaultStatus: 'opposition' },
+    { id: 'bennett', name: 'ביחד (בנט)', defaultStatus: 'coalition', isChangeBloc: true },
+    { id: 'liberman', name: 'ישראל ביתנו (ליברמן)', defaultStatus: 'coalition', isChangeBloc: true },
+    { id: 'golan', name: 'הדמוקרטים (גולן)', defaultStatus: 'opposition', isChangeBloc: true },
     { id: 'winter', name: 'עמך ישראל (וינטר וחדאד)', defaultStatus: 'coalition' },
-    { id: 'hendel', name: 'המילואימניקים (הנדל וזליכה)', defaultStatus: 'coalition' },
+    { id: 'hendel', name: 'המילואימניקים (הנדל וזליכה)', defaultStatus: 'coalition', isChangeBloc: true },
     { id: 'shas', name: 'ש"ס', defaultStatus: 'opposition' },
     { id: 'utj', name: 'יהדות התורה', defaultStatus: 'opposition' },
     { id: 'bengvir', name: 'עוצמה יהודית (בן גביר)', defaultStatus: 'opposition' },
@@ -631,6 +671,7 @@
   let partiesState = [];
   let likudBaseSeats = 20;
   let likudRebelsCount = 0;
+  let isBibiRetired = false;
 
   function switchPoll(key) {
     currentPollKey = key;
@@ -654,10 +695,24 @@
         name: p.name,
         seats: s,
         status: p.defaultStatus,
-        isRebel: !!p.isRebel
+        isRebel: !!p.isRebel,
+        isChangeBloc: !!p.isChangeBloc
       };
     });
 
+    render();
+  }
+
+  function toggleBibiStatus() {
+    isBibiRetired = !isBibiRetired;
+    const btn = document.getElementById('bibiToggleBtn');
+    if (isBibiRetired) {
+      btn.innerText = '✅ נתניהו פרש (הליכוד פתוח לאחדות)';
+      btn.className = 'btn-toggle active';
+    } else {
+      btn.innerText = '❌ נתניהו בראש הליכוד (חרם גוש השינוי)';
+      btn.className = 'btn-toggle';
+    }
     render();
   }
 
@@ -792,6 +847,8 @@
 
     const inGov = id => (partiesState.find(p => p.id === id) || {}).status === 'coalition';
     const isVetoWinterGolan = inGov('winter') && inGov('golan');
+    const changeInGov = partiesState.some(p => p.isChangeBloc && p.status === 'coalition');
+    const isBibiBoycottConflict = inGov('likud') && !isBibiRetired && changeInGov;
 
     partiesState.forEach(p => {
       const isUnderThreshold = !p.isRebel && p.seats > 0 && p.seats < 4;
@@ -803,7 +860,8 @@
 
       if (p.isRebel && p.seats === 0) return;
 
-      const isConflictRow = isVetoWinterGolan && (p.id === 'winter' || p.id === 'golan');
+      const isConflictRow = (isVetoWinterGolan && (p.id === 'winter' || p.id === 'golan')) ||
+                            (isBibiBoycottConflict && (p.id === 'likud' || (p.isChangeBloc && p.status === 'coalition')));
 
       const row = document.createElement('div');
       row.id = `row-${p.id}`;
@@ -828,7 +886,7 @@
           <div>
             <span style="font-weight: 700; ${p.isRebel ? 'color: var(--teal);' : ''}">${p.name}</span>
             ${isUnderThreshold ? '<span style="color: var(--rose); font-size: 0.72rem; display: block;">מתחת לאחוז החסימה (נמחק)</span>' : ''}
-            ${isConflictRow ? '<span style="color: var(--rose); font-size: 0.72rem; display: block; font-weight: bold;">⚠️ וטו הדדי: לא יושבים יחד בממשלה!</span>' : ''}
+            ${isConflictRow ? '<span style="color: var(--rose); font-size: 0.72rem; display: block; font-weight: bold;">⚠️ חסימת וטו / קו אדום!</span>' : ''}
           </div>
         </div>
         <button class="status-btn ${cls}" onclick="cycleStatus('${p.id}')">${label}</button>
@@ -854,15 +912,23 @@
     const inGov = id => (partiesState.find(p => p.id === id) || {}).status === 'coalition';
     const isAny = id => (partiesState.find(p => p.id === id) || {}).status !== 'opposition';
 
+    // 1. קו אדום בלתי עביר: חרם ישיבה עם נתניהו
+    const changeBlocInGov = partiesState.some(p => p.isChangeBloc && p.status === 'coalition');
+    if (inGov('likud') && !isBibiRetired && changeBlocInGov) {
+      conflicts.push('<strong>חרם נתניהו:</strong> מפלגות גוש השינוי מסרבות לשבת בממשלה תחת נתניהו! ישיבה משותפת תתאפשר רק אם יוכרז שנתניהו פרש.');
+    }
+
+    // 2. וטו הדדי עופר וינטר ויאיר גולן
     if (inGov('winter') && inGov('golan')) {
       conflicts.push('<strong>וטו הדדי מוחלט:</strong> עופר וינטר ויאיר גולן לא יושבים יחד באותה ממשלה (משקעי עבר ומסקנות הפוכות מ-7/10). יש להעביר אחד מהם לאופוזיציה.');
     }
-    if (inGov('liberman') && inGov('likud')) {
-      conflicts.push('<strong>קו אדום:</strong> אביגדור ליברמן לא יושב בממשלה תחת נתניהו.');
-    }
+
+    // 3. חרדים ללא גיוס
     if ((isAny('shas') || isAny('utj')) && (isAny('liberman') || isAny('hendel') || isAny('winter'))) {
       conflicts.push('<strong>משבר גיוס:</strong> ציר הלוחמים (ליברמן, וינטר, הנדל) מציב שוויון מלא בנטל וסנקציות כתנאי ברזל שמונע ישיבה עם המפלגות החרדיות.');
     }
+
+    // 4. מפלגות ערביות
     if ((isAny('raam') || isAny('hadash')) && (isAny('liberman') || isAny('bennett') || isAny('winter'))) {
       conflicts.push('<strong>קו אדום:</strong> אין הישענות על המפלגות הערביות בממשלת משרתים.');
     }
@@ -886,6 +952,10 @@
   }
 
   function resetToPollDefaults() {
+    isBibiRetired = false;
+    const btn = document.getElementById('bibiToggleBtn');
+    btn.innerText = '❌ נתניהו בראש הליכוד (חרם גוש השינוי)';
+    btn.className = 'btn-toggle';
     switchPoll(currentPollKey);
   }
 
